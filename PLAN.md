@@ -64,19 +64,27 @@
 
 > Phase 1 완료. 단위 테스트 26개 통과 (`coordinates`/`snap`/`collision`/`GridBoard`), `pnpm typecheck`/`test`/`build` 모두 통과.
 
-### Phase 2 — MVP
-Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능을 구현한다.
-- [ ] 프로젝트 스캐폴딩
-- [ ] 평면도 업로드 화면
-- [ ] 평면도 치수 입력 폼 (가로/세로 또는 벽별 길이) → 외곽선 생성
-- [ ] 그리드 생성 UI (행/열 수 or 셀 크기 지정)
-- [ ] 셀 탭 → 사진 촬영/업로드 → Storage 저장 및 매핑
-- [ ] 사진 → 자동 세그멘테이션으로 가구 영역 추출
-- [ ] 추출 결과 → 2D 탑뷰 아이콘 변환
-- [ ] 캔버스 라이브러리 기반 그리드 보드 구현 (가구 아이템 드래그앤드롭, 스냅, 겹침 표시)
-- [ ] 레이아웃 저장 API + 불러오기 화면
+### Phase 2 — MVP ✅ 완료 (실제 외부 서비스 연동은 보류)
+Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능을 구현한다. `apps/web`(Next.js 14 App Router)에 구현.
 
-### Phase 3 — 가구 인식 고도화
+**아키텍처 결정**: Supabase Storage/Postgres와 가구 자동 세그멘테이션 모델/서비스는 모두 실제 계정·API 키 없이 진행하기 위해, `ObjectStoragePort`/`SegmentationPort`/`LayoutRepositoryPort` 세 개의 인터페이스로 추상화하고 각각 인메모리 가짜 구현(`InMemoryObjectStorage`, `StubSegmentationProvider`, `InMemoryLayoutRepository`)을 사용했다. 호출부는 포트 인터페이스에만 의존하므로, 실제 Supabase/세그멘테이션 어댑터를 나중에 끼워넣어도 호출부 변경이 필요 없다.
+
+- [x] 프로젝트 스캐폴딩 (`apps/web`: Next.js 14 + TypeScript + Tailwind + Vitest/RTL)
+- [x] 평면도 업로드 화면 (`FloorplanUpload`, `ObjectStoragePort` 사용)
+- [x] 평면도 치수 입력 폼 (가로/세로) → 외곽선 생성 (`validateDimensions`, `DimensionForm`)
+- [x] 그리드 생성 UI (셀 크기 지정 → 행/열 계산) (`createGrid`, `GridSizeForm`)
+- [x] 셀 탭 → 사진 촬영/업로드 → Storage 저장 및 매핑 (`CellPhotoGrid`)
+- [x] 사진 → 자동 세그멘테이션으로 가구 영역 추출 (`extractFurniture`, `StubSegmentationProvider`로 파이프라인만 검증 — 실제 모델/서비스는 미선정)
+- [x] 추출 결과 → 2D 탑뷰 아이콘 변환 (`applyTopViewIcon`, 카테고리별 고정 SVG 아이콘)
+- [x] 캔버스 라이브러리 기반 그리드 보드 구현 (`FurnitureBoard`, `@ideal-potato/grid-canvas`의 `GridBoard` 사용)
+- [x] 레이아웃 저장 API + 불러오기 화면 (`LayoutManager`, `InMemoryLayoutRepository`)
+- [x] 위 단계를 하나의 페이지 흐름으로 연결 (`app/page.tsx`) + 골든 패스 통합 테스트
+
+> Phase 2 완료. 단위/컴포넌트/통합 테스트 51개 통과, `pnpm typecheck`/`test`/`build` 전체 워크스페이스 통과. 벽/외벽이 아닌 직사각형 룸만 지원하는 등 단순화한 부분은 위 항목별 커밋 메시지에 기록.
+
+### Phase 3 — 가구 인식 고도화 / 실제 외부 서비스 연동
+- [ ] 실제 세그멘테이션 모델/서비스 선정 및 `SegmentationPort` 구현체 교체 (`StubSegmentationProvider` → 실제 어댑터)
+- [ ] 실제 Supabase 프로젝트 생성 + `ObjectStoragePort`/`LayoutRepositoryPort` 구현체 교체 (`InMemory*` → Supabase 어댑터)
 - [ ] 자동 세그멘테이션 결과 확인/보정 UI (박스 드래그로 인식 영역의 위치/크기만 재조정, 마스크 직접 편집은 미지원)
 - [ ] 배경 제거 품질 개선 (투명 PNG 정제)
 - [ ] 가구 메타데이터 입력 폼 (이름/카테고리/크기)
@@ -91,23 +99,27 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 - [ ] 레이아웃 이미지 내보내기
 - [ ] 모바일 촬영 흐름 최적화 / PWA 적용 검토
 
-## 4. 디렉터리 구조 (제안)
+## 4. 디렉터리 구조 (현재)
 ```
 /packages
   /grid-canvas       # 범용 캔버스 라이브러리 (앱 비의존, 독립 배포 가능한 구조)
     /src
     /demo            # 단독 동작 검증용 데모
 
-/app or /src          # 제품 앱
-  /components         # 업로드 위젯, 치수 입력 폼 등 (그리드 보드는 grid-canvas 사용)
-  /lib                # Supabase 클라이언트, 세그멘테이션 호출, 추천 로직(휴리스틱/LLM)
-  /types              # Floorplan/Grid/Cell/FurnitureItem/Layout 타입
-  /app(또는 pages)     # 라우트: 평면도 생성, 그리드 편집, 보드, 레이아웃 목록
+/apps
+  /web               # 제품 앱 (Next.js 14 App Router)
+    /app             # 라우트 (page.tsx가 전체 MVP 플로우를 단계별로 연결)
+    /src/domain       # 순수 로직: outline/grid/cell/furnitureExtraction/furnitureIcon/layout
+    /src/ports        # ObjectStoragePort/SegmentationPort/LayoutRepositoryPort + 인메모리 가짜 구현
+    /src/components   # DimensionForm/GridSizeForm/FloorplanUpload/CellPhotoGrid/
+                       # FurnitureExtractionPanel/FurnitureBoard/LayoutManager
+    /tests            # 위 구조를 그대로 미러링하는 단위/컴포넌트/통합 테스트
 ```
 
 ## 5. 리스크 / 미정 사항
-- 캔버스 라이브러리를 직접 구현하므로 드래그/스냅/충돌 감지의 완성도를 검증할 시간이 더 필요함 → Phase 1을 별도 단계로 분리해 충분히 검증 후 Phase 2(MVP) 진입.
-- 자동 세그멘테이션 모델/서비스 선정(자체 호스팅 vs 외부 API) 및 비용/속도 트레이드오프는 Phase 1~2 사이에 PoC로 확인 필요.
+- 캔버스 라이브러리를 직접 구현하므로 드래그/스냅/충돌 감지의 완성도를 검증할 시간이 더 필요함 → Phase 1을 별도 단계로 분리해 충분히 검증 후 Phase 2(MVP) 진입. (해결됨)
+- 자동 세그멘테이션 모델/서비스 선정(자체 호스팅 vs 외부 API) 및 비용/속도 트레이드오프는 아직 미정. Phase 2에서는 `SegmentationPort` 인터페이스 뒤에 `StubSegmentationProvider`만 두고 진행했고, 실제 모델 선정은 Phase 3로 이동.
+- 같은 이유로 Supabase 실제 프로젝트 생성도 Phase 3로 이동 (`ObjectStoragePort`/`LayoutRepositoryPort`의 인메모리 구현으로 Phase 2를 완료).
 - AI 추천(v2)의 응답 신뢰성(겹침/범위 밖 배치 방지)을 위해 v2도 결과를 휴리스틱으로 후검증하는 단계가 필요할 수 있음.
 
 ## 6. 다음 액션

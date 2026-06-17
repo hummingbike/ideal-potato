@@ -24,19 +24,22 @@
 - [x] 앱 코드와 분리된 독립 패키지로 분리 (`/packages/grid-canvas`)
 - [x] 데모 페이지로 라이브러리 단독 동작 검증 (`pnpm --filter @ideal-potato/grid-canvas dev`)
 
-## Phase 2 — MVP
-- [ ] 프로젝트 스캐폴딩 (Next.js + TypeScript + Tailwind)
-- [ ] Supabase 프로젝트 생성 및 스키마 마이그레이션
-- [ ] 평면도 업로드 화면
-- [ ] 평면도 치수 입력 폼 (가로/세로 또는 벽별 길이) → 외곽선 생성
-- [ ] 그리드 생성 UI (행/열 수 or 셀 크기 입력)
-- [ ] 셀 탭 → 사진 촬영/업로드 → Storage 저장 + Cell 매핑
-- [ ] 사진 → 자동 세그멘테이션 호출 → 가구 영역 추출
-- [ ] 추출 결과 → 2D 탑뷰 아이콘 변환
-- [ ] Phase 1 캔버스 라이브러리로 그리드 보드 구현 (드래그앤드롭, 스냅, 겹침 표시)
-- [ ] 레이아웃 저장 API + 불러오기 화면
+## Phase 2 — MVP ✅ 완료 (`apps/web`)
+- [x] 프로젝트 스캐폴딩 (Next.js + TypeScript + Tailwind + Vitest/RTL, `apps/web`)
+- [x] 평면도 업로드 화면 (`FloorplanUpload`)
+- [x] 평면도 치수 입력 폼 (가로/세로) → 외곽선 생성 (`validateDimensions`, `DimensionForm`)
+- [x] 그리드 생성 UI (셀 크기 입력 → 행/열 계산) (`createGrid`, `GridSizeForm`)
+- [x] 셀 탭 → 사진 촬영/업로드 → Storage 저장 + Cell 매핑 (`CellPhotoGrid`)
+- [x] 사진 → 자동 세그멘테이션 호출 → 가구 영역 추출 (`extractFurniture` + `StubSegmentationProvider`)
+- [x] 추출 결과 → 2D 탑뷰 아이콘 변환 (`applyTopViewIcon`)
+- [x] Phase 1 캔버스 라이브러리로 그리드 보드 구현 (`FurnitureBoard`)
+- [x] 레이아웃 저장 API + 불러오기 화면 (`LayoutManager` + `InMemoryLayoutRepository`)
+- [x] 전체 플로우를 한 페이지로 연결 + 골든 패스 통합 테스트 (`app/page.tsx`)
+- [ ] Supabase 프로젝트 생성 및 스키마 마이그레이션 → Phase 3로 이동 (Phase 2는 인메모리 포트 구현으로 완료)
 
-## Phase 3 — 가구 인식 고도화
+## Phase 3 — 가구 인식 고도화 / 실제 외부 서비스 연동
+- [ ] 실제 세그멘테이션 모델/서비스 선정 및 연동 (`StubSegmentationProvider` 교체)
+- [ ] Supabase 프로젝트 생성 및 스키마 마이그레이션, `ObjectStoragePort`/`LayoutRepositoryPort` 실제 구현체로 교체
 - [ ] 자동 세그멘테이션 결과 확인/보정 UI (박스 드래그로 인식 영역의 위치/크기만 재조정, 마스크 직접 편집은 미지원)
 - [ ] 배경 제거 품질 개선 (투명 PNG 정제)
 - [ ] 가구 메타데이터 입력 폼 (이름/카테고리/크기)
@@ -54,4 +57,4 @@
 - [ ] PWA 적용 검토
 
 ## 남은 미정 사항 (착수 전 결정 필요)
-- [ ] 자동 세그멘테이션 모델/서비스 선정 (자체 호스팅 vs 외부 API) — Phase 1~2 사이 PoC에서 결정
+- [ ] 자동 세그멘테이션 모델/서비스 선정 (자체 호스팅 vs 외부 API) — Phase 3에서 결정
