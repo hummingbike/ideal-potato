@@ -2,6 +2,7 @@
 
 import { GridBoard } from "@ideal-potato/grid-canvas";
 import { useEffect, useRef } from "react";
+import { resolvePlacements } from "../domain/layout";
 import type { FurnitureItem, Grid, LayoutPlacement } from "../domain/types";
 
 export interface FurnitureBoardProps {
@@ -29,20 +30,15 @@ export function FurnitureBoard({
     const container = containerRef.current;
     if (!container) return;
 
-    const placementByItemId = new Map(placements.map((placement) => [placement.itemId, placement]));
+    const resolved = resolvePlacements(items, placements);
+    const itemById = new Map(items.map((item) => [item.id, item]));
 
     const board = new GridBoard({
       container,
       grid: { rows: grid.rows, cols: grid.cols, cellSize: pixelsPerCell },
-      items: items.map((item) => {
-        const placement = placementByItemId.get(item.id);
-        return {
-          id: item.id,
-          row: placement?.row ?? item.sourceCell.row,
-          col: placement?.col ?? item.sourceCell.col,
-          w: item.size.w,
-          h: item.size.h,
-        };
+      items: resolved.map((placement) => {
+        const item = itemById.get(placement.itemId)!;
+        return { id: item.id, row: placement.row, col: placement.col, w: item.size.w, h: item.size.h };
       }),
     });
 
