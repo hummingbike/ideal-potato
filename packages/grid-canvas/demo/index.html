@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>grid-canvas demo</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      #board {
+        border: 1px solid #ccc;
+        background-image: linear-gradient(to right, #eee 1px, transparent 1px),
+          linear-gradient(to bottom, #eee 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      #board > div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: #fff;
+        border-radius: 4px;
+        cursor: grab;
+        user-select: none;
+      }
+      #log {
+        margin-top: 1rem;
+        font-family: monospace;
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>grid-canvas demo</h1>
+    <p>가구 아이템을 드래그해서 옮겨보세요. 다른 아이템과 겹치면 원래 자리로 돌아갑니다.</p>
+    <div id="board"></div>
+    <div id="log"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
