@@ -14,15 +14,15 @@
 - [x] 백엔드/스토리지 기술 스택 확정 (Supabase: Postgres + Storage + Auth)
 - [ ] Floorplan/Grid/Cell/FurnitureItem/Layout 스키마 확정 (테이블 컬럼까지)
 
-## Phase 1 — 범용 캔버스 라이브러리 구현
-- [ ] 라이브러리 공개 API 설계 (그리드 정의, 아이템 배치, 드래그 이벤트, 스냅, 충돌 감지)
-- [ ] 렌더링 방식 결정 (Canvas 2D vs SVG vs DOM) + 좌표계 정의
-- [ ] 그리드 렌더링 구현
-- [ ] 포인터 이벤트 기반 드래그 앤 드롭 구현
-- [ ] 칸 단위 스냅 구현
-- [ ] 아이템 간 겹침(충돌) 감지 구현
-- [ ] 앱 코드와 분리된 독립 패키지로 분리 (`/packages/grid-canvas`)
-- [ ] 데모 페이지/스토리북으로 라이브러리 단독 동작 검증
+## Phase 1 — 범용 캔버스 라이브러리 구현 ✅ 완료
+- [x] 라이브러리 공개 API 설계 (그리드 정의, 아이템 배치, 드래그 이벤트, 스냅, 충돌 감지)
+- [x] 렌더링 방식 결정: 절대 위치 DOM 엘리먼트 + Pointer Events
+- [x] 그리드 렌더링 구현
+- [x] 포인터 이벤트 기반 드래그 앤 드롭 구현
+- [x] 칸 단위 스냅 구현
+- [x] 아이템 간 겹침(충돌) 감지 구현
+- [x] 앱 코드와 분리된 독립 패키지로 분리 (`/packages/grid-canvas`)
+- [x] 데모 페이지로 라이브러리 단독 동작 검증 (`pnpm --filter @ideal-potato/grid-canvas dev`)
 
 ## Phase 2 — MVP
 - [ ] 프로젝트 스캐폴딩 (Next.js + TypeScript + Tailwind)
