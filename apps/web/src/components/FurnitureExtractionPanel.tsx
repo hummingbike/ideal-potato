@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cellKey } from "../domain/cell";
 import { extractFurniture } from "../domain/furnitureExtraction";
+import { applyTopViewIcon } from "../domain/furnitureIcon";
 import type { FurnitureItem } from "../domain/types";
 import type { SegmentationPort } from "../ports/segmentation";
 import type { CellPhoto } from "./CellPhotoGrid";
@@ -33,7 +34,7 @@ export function FurnitureExtractionPanel({ cellPhotos, segmenter, onExtracted }:
         size: DEFAULT_SIZE,
       });
       setExtractedKeys((prev) => new Set(prev).add(key));
-      onExtracted(item);
+      onExtracted(applyTopViewIcon(item));
     } finally {
       setExtractingKey(null);
     }

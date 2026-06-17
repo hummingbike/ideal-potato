@@ -39,6 +39,7 @@ describe("FurnitureExtractionPanel", () => {
       sourceCell: { row: 0, col: 1 },
       originalImageUrl: "memory://desk.png",
       segmentedImageUrl: "memory://desk.png",
+      iconImageUrl: "/icons/generic.svg",
     });
   });
 });
