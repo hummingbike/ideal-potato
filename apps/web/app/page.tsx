@@ -9,11 +9,23 @@ import { FurnitureExtractionPanel } from "../src/components/FurnitureExtractionP
 import { GridSizeForm } from "../src/components/GridSizeForm";
 import { LayoutManager } from "../src/components/LayoutManager";
 import type { FurnitureItem, Grid, Layout, LayoutPlacement, Outline } from "../src/domain/types";
-import { InMemoryLayoutRepository } from "../src/ports/layoutRepository";
-import { InMemoryObjectStorage } from "../src/ports/objectStorage";
+import { getSupabaseClient } from "../src/lib/supabaseClient";
+import { InMemoryLayoutRepository, SupabaseLayoutRepository, type LayoutRepositoryPort } from "../src/ports/layoutRepository";
+import { InMemoryObjectStorage, SupabaseObjectStorage, type ObjectStoragePort } from "../src/ports/objectStorage";
 import { StubSegmentationProvider } from "../src/ports/segmentation";
 
 const FLOORPLAN_ID = "floorplan-1";
+
+/** Uses the real Supabase adapters when a project is configured, otherwise the in-memory stand-ins (local dev/tests). */
+function createObjectStorage(): ObjectStoragePort {
+  const client = getSupabaseClient();
+  return client ? new SupabaseObjectStorage(client) : new InMemoryObjectStorage();
+}
+
+function createLayoutRepository(): LayoutRepositoryPort {
+  const client = getSupabaseClient();
+  return client ? new SupabaseLayoutRepository(client) : new InMemoryLayoutRepository();
+}
 
 /**
  * Pixel space the StubSegmentationProvider's detected boxes live in. Stands
@@ -25,9 +37,9 @@ const ASSUMED_IMAGE_BOUNDS = { width: 200, height: 200 };
 type Step = "outline" | "grid" | "cells" | "furniture" | "board";
 
 export default function HomePage() {
-  const [storage] = useState(() => new InMemoryObjectStorage());
+  const [storage] = useState(createObjectStorage);
   const [segmenter] = useState(() => new StubSegmentationProvider());
-  const [repository] = useState(() => new InMemoryLayoutRepository());
+  const [repository] = useState(createLayoutRepository);
 
   const [step, setStep] = useState<Step>("outline");
   const [outline, setOutline] = useState<Outline | null>(null);
