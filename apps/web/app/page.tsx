@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BoundingBoxCorrectionPanel } from "../src/components/BoundingBoxCorrectionPanel";
 import { CellPhotoGrid, type CellPhoto } from "../src/components/CellPhotoGrid";
 import { DimensionForm } from "../src/components/DimensionForm";
 import { FurnitureBoard } from "../src/components/FurnitureBoard";
@@ -13,6 +14,13 @@ import { InMemoryObjectStorage } from "../src/ports/objectStorage";
 import { StubSegmentationProvider } from "../src/ports/segmentation";
 
 const FLOORPLAN_ID = "floorplan-1";
+
+/**
+ * Pixel space the StubSegmentationProvider's detected boxes live in. Stands
+ * in until real segmentation integration reports each photo's actual
+ * dimensions (Phase 3 외부 서비스 연동).
+ */
+const ASSUMED_IMAGE_BOUNDS = { width: 200, height: 200 };
 
 type Step = "outline" | "grid" | "cells" | "furniture" | "board";
 
@@ -44,6 +52,10 @@ export default function HomePage() {
 
   function handleFurnitureExtracted(item: FurnitureItem) {
     setItems((prev) => [...prev.filter((existing) => existing.id !== item.id), item]);
+  }
+
+  function handleItemUpdate(updated: FurnitureItem) {
+    setItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
   }
 
   function handleItemMove(placement: LayoutPlacement) {
@@ -86,6 +98,24 @@ export default function HomePage() {
         <section>
           <h2 className="mb-2 text-lg font-semibold">4. 가구 추출</h2>
           <FurnitureExtractionPanel cellPhotos={cellPhotos} segmenter={segmenter} onExtracted={handleFurnitureExtracted} />
+          {items.length > 0 && (
+            <div className="mt-4 flex flex-col gap-4">
+              <h3 className="font-semibold">추출 결과 보정</h3>
+              {items.map((item) => (
+                <div key={item.id} className="flex flex-col gap-2">
+                  <p>{`${item.name} (${item.category})`}</p>
+                  {item.boundingBox && (
+                    <BoundingBoxCorrectionPanel
+                      imageUrl={item.originalImageUrl}
+                      boundingBox={item.boundingBox}
+                      imageBounds={ASSUMED_IMAGE_BOUNDS}
+                      onChange={(box) => handleItemUpdate({ ...item, boundingBox: box })}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           <button type="button" className="mt-3" disabled={items.length === 0} onClick={() => setStep("board")}>
             보드로 이동
           </button>
