@@ -1,3 +1,5 @@
+import type { BoundingBox } from "../ports/segmentation";
+
 export interface Outline {
   /** Room width in meters. */
   widthMeters: number;
@@ -46,6 +48,8 @@ export interface FurnitureItem {
   originalImageUrl: string;
   segmentedImageUrl?: string;
   iconImageUrl?: string;
+  /** Detected furniture region within the original photo, in source-image pixels; user-correctable. */
+  boundingBox?: BoundingBox;
   sourceCell: CellPosition;
 }
 

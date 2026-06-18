@@ -28,6 +28,7 @@ describe("extractFurniture", () => {
       size: { w: 2, h: 1 },
       originalImageUrl: "memory://cells/0-0.png",
       segmentedImageUrl: "memory://cells/0-0-cropped.png",
+      boundingBox: { x: 10, y: 10, width: 80, height: 60 },
       sourceCell: { row: 0, col: 0 },
     });
   });

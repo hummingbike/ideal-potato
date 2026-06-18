@@ -24,6 +24,7 @@ export async function extractFurniture(
     size: input.size,
     originalImageUrl: input.imageUrl,
     segmentedImageUrl: result.croppedImageUrl,
+    boundingBox: result.boundingBox,
     sourceCell: input.sourceCell,
   };
 }
