@@ -12,7 +12,7 @@
 - [x] 그리드 보드 표현 방식 결정 (2D 탑뷰 아이콘)
 - [x] 평면도 외곽선 입력 방식 결정 (치수 입력 폼 제공)
 - [x] 백엔드/스토리지 기술 스택 확정 (Supabase: Postgres + Storage + Auth)
-- [ ] Floorplan/Grid/Cell/FurnitureItem/Layout 스키마 확정 (테이블 컬럼까지)
+- [x] Floorplan/Grid/Cell/FurnitureItem/Layout 스키마 확정 (테이블 컬럼까지) — `supabase/migrations/20260618003947_create_core_schema.sql`
 
 ## Phase 1 — 범용 캔버스 라이브러리 구현 ✅ 완료
 - [x] 라이브러리 공개 API 설계 (그리드 정의, 아이템 배치, 드래그 이벤트, 스냅, 충돌 감지)
@@ -42,9 +42,9 @@
 - [x] 가구 메타데이터 입력 폼 (이름/카테고리/크기)
 - [x] 자동 세그멘테이션 결과 확인/보정 UI (박스 드래그로 인식 영역의 위치/크기만 재조정, 마스크 직접 편집은 미지원)
 
-### 2단계 (실제 외부 서비스 연동, 보류)
-- [ ] 실제 세그멘테이션 모델/서비스 선정 및 연동 (`StubSegmentationProvider` 교체)
-- [ ] Supabase 프로젝트 생성 및 스키마 마이그레이션, `ObjectStoragePort`/`LayoutRepositoryPort` 실제 구현체로 교체
+### 2단계 (실제 외부 서비스 연동)
+- [x] Supabase 프로젝트 생성(`ideal-potato`) 및 스키마 마이그레이션, `ObjectStoragePort`/`LayoutRepositoryPort` 실제 구현체로 교체 (`SupabaseObjectStorage`/`SupabaseLayoutRepository`, `app/page.tsx`에서 환경변수 유무로 분기)
+- [ ] 실제 세그멘테이션 모델/서비스 선정 및 연동 (`StubSegmentationProvider` 교체) — 미선정으로 보류
 - [ ] 배경 제거 품질 개선 (투명 PNG 정제)
 
 ## Phase 4 — AI 추천 배치

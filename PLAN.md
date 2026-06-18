@@ -87,12 +87,14 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 - [x] 가구 메타데이터 입력 폼 (이름/카테고리/크기) — `validateFurnitureMetadata`, `FurnitureExtractionPanel`에 통합
 - [x] 자동 세그멘테이션 결과 확인/보정 UI (박스 드래그로 인식 영역의 위치/크기만 재조정, 마스크 직접 편집은 미지원) — `boundingBoxCorrection` 도메인 함수 + `BoundingBoxCorrectionPanel`, `app/page.tsx` 가구 추출 단계에 연결
 
-**2단계 (실제 외부 서비스 연동, 계정/비용 결정 필요 — 보류)**
-- [ ] 실제 세그멘테이션 모델/서비스 선정 및 `SegmentationPort` 구현체 교체 (`StubSegmentationProvider` → 실제 어댑터)
-- [ ] 실제 Supabase 프로젝트 생성 + `ObjectStoragePort`/`LayoutRepositoryPort` 구현체 교체 (`InMemory*` → Supabase 어댑터)
+**2단계 (실제 외부 서비스 연동)**
+- [x] 실제 Supabase 프로젝트 생성(`ideal-potato`, 조직 `zero-bridge`, 리전 ap-northeast-2, 월 $0 무료 티어) + `ObjectStoragePort`/`LayoutRepositoryPort` 구현체 교체 (`InMemory*` → `SupabaseObjectStorage`/`SupabaseLayoutRepository`)
+- [ ] 실제 세그멘테이션 모델/서비스 선정 및 `SegmentationPort` 구현체 교체 (`StubSegmentationProvider` → 실제 어댑터) — 모델/서비스 미선정으로 보류
 - [ ] 배경 제거 품질 개선 (투명 PNG 정제) — 실제 세그멘테이션 모델 연동 이후 품질 평가 가능
 
-> 1단계 완료. `FurnitureItem`에 `boundingBox`를 저장해 보정 UI가 다룰 데이터를 마련했고, 보정 패널은 `StubSegmentationProvider`가 가정하는 200x200 픽셀 공간(`ASSUMED_IMAGE_BOUNDS`)을 기준으로 동작한다 — 실제 이미지 크기 인식은 2단계(실제 세그멘테이션 연동)에서 처리.
+> 1단계 완료. `FurnitureItem`에 `boundingBox`를 저장해 보정 UI가 다룰 데이터를 마련했고, 보정 패널은 `StubSegmentationProvider`가 가정하는 200x200 픽셀 공간(`ASSUMED_IMAGE_BOUNDS`)을 기준으로 동작한다 — 실제 이미지 크기 인식은 실제 세그멘테이션 연동 시 처리.
+>
+> 2단계 Supabase 연동 완료: `floorplans`/`grids`/`cells`/`furniture_items`/`layouts`/`layout_placements` 테이블(RLS 활성화, 단일 사용자 전제로 anon 키 전체 접근 정책)과 공개 `photos` Storage 버킷을 마이그레이션으로 생성 (`supabase/migrations/`). `app/page.tsx`는 `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` 환경변수가 있으면 실제 Supabase 어댑터를, 없으면 인메모리 어댑터를 쓰도록 분기해 로컬/테스트/CI는 계속 인메모리로 동작한다. 어댑터 단위 테스트는 모의(mock) Supabase 클라이언트로 검증 (실제 네트워크 호출 없음). 세그멘테이션은 여전히 `StubSegmentationProvider` 사용 중 — 모델/서비스 선정 후 교체 필요.
 
 ### Phase 4 — AI 추천 배치
 - [ ] 휴리스틱 기반 추천 v1 (벽 붙이기, 동선 폭 확보, 겹침 금지)
@@ -106,6 +108,9 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 
 ## 4. 디렉터리 구조 (현재)
 ```
+/supabase
+  /migrations        # 실제 ideal-potato Supabase 프로젝트에 적용한 SQL 마이그레이션
+
 /packages
   /grid-canvas       # 범용 캔버스 라이브러리 (앱 비의존, 독립 배포 가능한 구조)
     /src
@@ -114,17 +119,21 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 /apps
   /web               # 제품 앱 (Next.js 14 App Router)
     /app             # 라우트 (page.tsx가 전체 MVP 플로우를 단계별로 연결)
-    /src/domain       # 순수 로직: outline/grid/cell/furnitureExtraction/furnitureIcon/layout
-    /src/ports        # ObjectStoragePort/SegmentationPort/LayoutRepositoryPort + 인메모리 가짜 구현
+    /src/lib          # supabaseClient (환경변수 있으면 생성, 없으면 undefined)
+    /src/domain       # 순수 로직: outline/grid/cell/furnitureExtraction/furnitureIcon/furnitureMetadata/
+                       # boundingBoxCorrection/layout
+    /src/ports        # ObjectStoragePort/SegmentationPort/LayoutRepositoryPort
+                       # 각각 InMemory*(로컬/테스트) + Supabase*(실제 어댑터, SegmentationPort는 아직 Stub만)
     /src/components   # DimensionForm/GridSizeForm/FloorplanUpload/CellPhotoGrid/
-                       # FurnitureExtractionPanel/FurnitureBoard/LayoutManager
+                       # FurnitureExtractionPanel/BoundingBoxCorrectionPanel/FurnitureBoard/LayoutManager
     /tests            # 위 구조를 그대로 미러링하는 단위/컴포넌트/통합 테스트
+    .env.example      # NEXT_PUBLIC_SUPABASE_URL/ANON_KEY — 실제 값은 .env.local(미커밋)에
 ```
 
 ## 5. 리스크 / 미정 사항
 - 캔버스 라이브러리를 직접 구현하므로 드래그/스냅/충돌 감지의 완성도를 검증할 시간이 더 필요함 → Phase 1을 별도 단계로 분리해 충분히 검증 후 Phase 2(MVP) 진입. (해결됨)
-- 자동 세그멘테이션 모델/서비스 선정(자체 호스팅 vs 외부 API) 및 비용/속도 트레이드오프는 아직 미정. Phase 2에서는 `SegmentationPort` 인터페이스 뒤에 `StubSegmentationProvider`만 두고 진행했고, 실제 모델 선정은 Phase 3로 이동.
-- 같은 이유로 Supabase 실제 프로젝트 생성도 Phase 3로 이동 (`ObjectStoragePort`/`LayoutRepositoryPort`의 인메모리 구현으로 Phase 2를 완료).
+- 자동 세그멘테이션 모델/서비스 선정(자체 호스팅 vs 외부 API) 및 비용/속도 트레이드오프는 아직 미정. `SegmentationPort` 인터페이스 뒤에 `StubSegmentationProvider`만 두고 진행 중 — 실제 모델 선정 시 어댑터만 교체하면 됨.
+- ~~Supabase 실제 프로젝트 생성~~ — 완료 (`ideal-potato` 프로젝트, Phase 3 2단계). RLS는 단일 사용자/무인증 전제로 anon 키에 전체 접근을 허용하는 의도된 단순화이며, Supabase 보안 어드바이저의 "RLS Policy Always True" 경고는 이 결정에 따른 것으로 확인함 (실제 다중 사용자 전환 시 재검토 필요).
 - AI 추천(v2)의 응답 신뢰성(겹침/범위 밖 배치 방지)을 위해 v2도 결과를 휴리스틱으로 후검증하는 단계가 필요할 수 있음.
 
 ## 6. 다음 액션
