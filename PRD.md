@@ -92,6 +92,7 @@
 - **백엔드/스토리지**: Supabase (Postgres + Storage + Auth) 확정.
 - **보정 UI 범위**: 자동 세그멘테이션 오인식 시, 박스 드래그로 인식 영역(위치/크기)만 재조정. 마스크 직접 편집(브러시 보정)은 지원하지 않음.
 - **Phase 2 외부 연동 범위**: Supabase 프로젝트/세그멘테이션 모델 모두 아직 실제로 붙이지 않음. `ObjectStoragePort`/`SegmentationPort`/`LayoutRepositoryPort` 인터페이스 뒤에 인메모리 가짜 구현을 두고 MVP 전체 플로우(평면도 입력→그리드→셀 사진→가구 추출→보드 재배치→레이아웃 저장)를 먼저 완성. 실제 Supabase/세그멘테이션 어댑터 연동은 Phase 3로 이동 (자세한 내용은 [PLAN.md](PLAN.md) Phase 2/3 참고).
+- **Supabase 실제 연동**: `ideal-potato` 프로젝트(조직 `zero-bridge`, 리전 ap-northeast-2)를 생성해 `ObjectStoragePort`/`LayoutRepositoryPort`를 실제 Supabase Storage/Postgres 어댑터로 교체. 단일 사용자/무인증 전제(본 절 위쪽 항목)에 따라 RLS는 anon 키에 전체 접근을 허용 (자세한 내용은 [PLAN.md](PLAN.md) Phase 3 참고).
 
 ## 13. 남은 미해결 질문 (Open Questions)
-- 자동 세그멘테이션 모델/서비스 선정 (자체 호스팅 vs 외부 API) — Phase 3에서 실제 연동 시 결정.
+- 자동 세그멘테이션 모델/서비스 선정 (자체 호스팅 vs 외부 API) — 실제 연동 시 결정 (Supabase 연동은 완료, 세그멘테이션만 남음).
