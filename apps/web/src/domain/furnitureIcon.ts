@@ -14,6 +14,9 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 const DEFAULT_ICON = "/icons/generic.svg";
 
+/** Categories selectable in the furniture metadata form; anything else falls back to the generic icon. */
+export const FURNITURE_CATEGORIES = [...Object.keys(CATEGORY_ICONS), "기타"];
+
 export function getIconForCategory(category: string): string {
   return CATEGORY_ICONS[category] ?? DEFAULT_ICON;
 }
