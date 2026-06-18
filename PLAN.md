@@ -1,6 +1,6 @@
 # PLAN — 기술 실행 계획
 
-> 상태: 초안 (Draft) · 최종 수정: 2026-06-17
+> 상태: 초안 (Draft) · 최종 수정: 2026-06-18
 > 제품 요구사항은 [PRD.md](PRD.md) 참고.
 > 단계 번호는 PRD의 Phase 번호와 다를 수 있다 — 범용 캔버스 라이브러리 구현이 별도 선행 단계로 추가되었기 때문.
 
@@ -83,11 +83,16 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 > Phase 2 완료. 단위/컴포넌트/통합 테스트 51개 통과, `pnpm typecheck`/`test`/`build` 전체 워크스페이스 통과. 벽/외벽이 아닌 직사각형 룸만 지원하는 등 단순화한 부분은 위 항목별 커밋 메시지에 기록.
 
 ### Phase 3 — 가구 인식 고도화 / 실제 외부 서비스 연동
+**1단계 (프론트엔드, 외부 서비스 연동 없이 진행) ✅ 완료**
+- [x] 가구 메타데이터 입력 폼 (이름/카테고리/크기) — `validateFurnitureMetadata`, `FurnitureExtractionPanel`에 통합
+- [x] 자동 세그멘테이션 결과 확인/보정 UI (박스 드래그로 인식 영역의 위치/크기만 재조정, 마스크 직접 편집은 미지원) — `boundingBoxCorrection` 도메인 함수 + `BoundingBoxCorrectionPanel`, `app/page.tsx` 가구 추출 단계에 연결
+
+**2단계 (실제 외부 서비스 연동, 계정/비용 결정 필요 — 보류)**
 - [ ] 실제 세그멘테이션 모델/서비스 선정 및 `SegmentationPort` 구현체 교체 (`StubSegmentationProvider` → 실제 어댑터)
 - [ ] 실제 Supabase 프로젝트 생성 + `ObjectStoragePort`/`LayoutRepositoryPort` 구현체 교체 (`InMemory*` → Supabase 어댑터)
-- [ ] 자동 세그멘테이션 결과 확인/보정 UI (박스 드래그로 인식 영역의 위치/크기만 재조정, 마스크 직접 편집은 미지원)
-- [ ] 배경 제거 품질 개선 (투명 PNG 정제)
-- [ ] 가구 메타데이터 입력 폼 (이름/카테고리/크기)
+- [ ] 배경 제거 품질 개선 (투명 PNG 정제) — 실제 세그멘테이션 모델 연동 이후 품질 평가 가능
+
+> 1단계 완료. `FurnitureItem`에 `boundingBox`를 저장해 보정 UI가 다룰 데이터를 마련했고, 보정 패널은 `StubSegmentationProvider`가 가정하는 200x200 픽셀 공간(`ASSUMED_IMAGE_BOUNDS`)을 기준으로 동작한다 — 실제 이미지 크기 인식은 2단계(실제 세그멘테이션 연동)에서 처리.
 
 ### Phase 4 — AI 추천 배치
 - [ ] 휴리스틱 기반 추천 v1 (벽 붙이기, 동선 폭 확보, 겹침 금지)
