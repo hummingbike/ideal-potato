@@ -10,7 +10,7 @@ function pointerEvent(type: string, props: { clientX: number; clientY: number; p
 }
 
 describe("HomePage golden path", () => {
-  it("walks through outline -> grid -> cell photo -> extraction -> correction -> board -> save", async () => {
+  it("walks through outline -> grid -> cell photo -> extraction -> correction -> board -> recommendation -> save", async () => {
     const user = userEvent.setup();
     render(<HomePage />);
 
@@ -46,9 +46,17 @@ describe("HomePage golden path", () => {
     const board = await screen.findByTestId("furniture-board");
     expect(board.querySelector('[data-item-id="furniture-0-0"]')).not.toBeNull();
 
-    // 6. Saving the current arrangement shows a confirmation
+    // 6. Request an AI recommendation, apply it, then undo it
+    await user.click(screen.getByRole("button", { name: "추천 받기" }));
+    expect(await screen.findByText("가구 (0, 0): 벽 쪽에 배치해 동선을 확보했습니다.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "추천 적용" }));
+    expect(await screen.findByText("추천을 적용했습니다.")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "되돌리기" }));
+    expect(screen.queryByRole("button", { name: "되돌리기" })).not.toBeInTheDocument();
+
+    // 7. Saving the current arrangement shows a confirmation
     await user.type(screen.getByLabelText("배치 이름"), "테스트 배치");
     await user.click(screen.getByRole("button", { name: "배치 저장" }));
-    expect(await screen.findByRole("status")).toHaveTextContent('"테스트 배치" 저장됨');
+    expect(await screen.findByText('"테스트 배치" 저장됨')).toBeInTheDocument();
   });
 });

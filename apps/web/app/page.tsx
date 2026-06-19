@@ -8,10 +8,12 @@ import { FurnitureBoard } from "../src/components/FurnitureBoard";
 import { FurnitureExtractionPanel } from "../src/components/FurnitureExtractionPanel";
 import { GridSizeForm } from "../src/components/GridSizeForm";
 import { LayoutManager } from "../src/components/LayoutManager";
+import { RecommendationPanel } from "../src/components/RecommendationPanel";
 import type { FurnitureItem, Grid, Layout, LayoutPlacement, Outline } from "../src/domain/types";
 import { getSupabaseClient } from "../src/lib/supabaseClient";
 import { InMemoryLayoutRepository, SupabaseLayoutRepository, type LayoutRepositoryPort } from "../src/ports/layoutRepository";
 import { InMemoryObjectStorage, SupabaseObjectStorage, type ObjectStoragePort } from "../src/ports/objectStorage";
+import { HeuristicRecommendationProvider } from "../src/ports/recommendation";
 import { StubSegmentationProvider } from "../src/ports/segmentation";
 
 const FLOORPLAN_ID = "floorplan-1";
@@ -40,6 +42,7 @@ export default function HomePage() {
   const [storage] = useState(createObjectStorage);
   const [segmenter] = useState(() => new StubSegmentationProvider());
   const [repository] = useState(createLayoutRepository);
+  const [recommender] = useState(() => new HeuristicRecommendationProvider());
 
   const [step, setStep] = useState<Step>("outline");
   const [outline, setOutline] = useState<Outline | null>(null);
@@ -47,6 +50,9 @@ export default function HomePage() {
   const [cellPhotos, setCellPhotos] = useState<CellPhoto[]>([]);
   const [items, setItems] = useState<FurnitureItem[]>([]);
   const [placements, setPlacements] = useState<LayoutPlacement[]>([]);
+  const [placementsBeforeRecommendation, setPlacementsBeforeRecommendation] = useState<LayoutPlacement[] | null>(
+    null,
+  );
 
   function handleOutlineSubmit(nextOutline: Outline) {
     setOutline(nextOutline);
@@ -76,6 +82,18 @@ export default function HomePage() {
 
   function handleLoadLayout(layout: Layout) {
     setPlacements(layout.placements);
+    setPlacementsBeforeRecommendation(null);
+  }
+
+  function handleApplyRecommendation(recommended: LayoutPlacement[]) {
+    setPlacementsBeforeRecommendation(placements);
+    setPlacements(recommended);
+  }
+
+  function handleUndoRecommendation() {
+    if (!placementsBeforeRecommendation) return;
+    setPlacements(placementsBeforeRecommendation);
+    setPlacementsBeforeRecommendation(null);
   }
 
   return (
@@ -138,6 +156,15 @@ export default function HomePage() {
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold">5. 배치 보드</h2>
           <FurnitureBoard grid={grid} items={items} placements={placements} onItemMove={handleItemMove} />
+          <div>
+            <h3 className="mb-2 font-semibold">AI 추천 배치</h3>
+            <RecommendationPanel grid={grid} items={items} recommender={recommender} onApply={handleApplyRecommendation} />
+            {placementsBeforeRecommendation && (
+              <button type="button" className="mt-2" onClick={handleUndoRecommendation}>
+                되돌리기
+              </button>
+            )}
+          </div>
           <LayoutManager
             floorplanId={FLOORPLAN_ID}
             items={items}

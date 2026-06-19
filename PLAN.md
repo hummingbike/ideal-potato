@@ -1,6 +1,6 @@
 # PLAN — 기술 실행 계획
 
-> 상태: 초안 (Draft) · 최종 수정: 2026-06-18
+> 상태: 초안 (Draft) · 최종 수정: 2026-06-19
 > 제품 요구사항은 [PRD.md](PRD.md) 참고.
 > 단계 번호는 PRD의 Phase 번호와 다를 수 있다 — 범용 캔버스 라이브러리 구현이 별도 선행 단계로 추가되었기 때문.
 
@@ -97,9 +97,11 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 > 2단계 Supabase 연동 완료: `floorplans`/`grids`/`cells`/`furniture_items`/`layouts`/`layout_placements` 테이블(RLS 활성화, 단일 사용자 전제로 anon 키 전체 접근 정책)과 공개 `photos` Storage 버킷을 마이그레이션으로 생성 (`supabase/migrations/`). `app/page.tsx`는 `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` 환경변수가 있으면 실제 Supabase 어댑터를, 없으면 인메모리 어댑터를 쓰도록 분기해 로컬/테스트/CI는 계속 인메모리로 동작한다. 어댑터 단위 테스트는 모의(mock) Supabase 클라이언트로 검증 (실제 네트워크 호출 없음). 세그멘테이션은 여전히 `StubSegmentationProvider` 사용 중 — 모델/서비스 선정 후 교체 필요.
 
 ### Phase 4 — AI 추천 배치
-- [ ] 휴리스틱 기반 추천 v1 (벽 붙이기, 동선 폭 확보, 겹침 금지)
-- [ ] Claude API 연동 추천 v2 (구조화 입력/출력, 추천 사유 텍스트)
-- [ ] 추천 미리보기 → 적용/되돌리기 UX
+- [x] 휴리스틱 기반 추천 v1 (벽 붙이기, 동선 폭 확보, 겹침 금지) — `recommendPlacements` (`src/domain/recommendation.ts`)
+- [ ] Claude API 연동 추천 v2 (구조화 입력/출력, 추천 사유 텍스트) — `RecommendationPort` 뒤에 v1만 구현, API 키 없이는 보류 (세그멘테이션과 동일한 패턴)
+- [x] 추천 미리보기 → 적용/되돌리기 UX — `RecommendationPanel` + `app/page.tsx`의 되돌리기 버튼
+
+> v1 완료. 가구 면적이 큰 순서로 정렬해 벽에 붙는 칸부터 배치하고, 빈자리가 있으면 그리드 중앙 행(동선)을 비워둔다. 겹침은 `@ideal-potato/grid-canvas`의 `findCollisions`로 차단하며, 벽/빈 공간 모두 없으면 통로를 일부 사용하거나 `unplaced` 목록으로 보고한다. `RecommendationPort`/`HeuristicRecommendationProvider`는 `SegmentationPort`와 동일한 패턴으로, v2(Claude API)는 어댑터만 교체하면 되도록 설계했다. 단위/컴포넌트/통합 테스트 14개 추가, `pnpm typecheck`/`test`/`build` 전체 워크스페이스 통과.
 
 ### Phase 5 — 다듬기
 - [ ] 레이아웃 비교(전/후) 뷰
@@ -121,11 +123,13 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
     /app             # 라우트 (page.tsx가 전체 MVP 플로우를 단계별로 연결)
     /src/lib          # supabaseClient (환경변수 있으면 생성, 없으면 undefined)
     /src/domain       # 순수 로직: outline/grid/cell/furnitureExtraction/furnitureIcon/furnitureMetadata/
-                       # boundingBoxCorrection/layout
-    /src/ports        # ObjectStoragePort/SegmentationPort/LayoutRepositoryPort
-                       # 각각 InMemory*(로컬/테스트) + Supabase*(실제 어댑터, SegmentationPort는 아직 Stub만)
+                       # boundingBoxCorrection/layout/recommendation
+    /src/ports        # ObjectStoragePort/SegmentationPort/LayoutRepositoryPort/RecommendationPort
+                       # 각각 InMemory*(로컬/테스트) + Supabase*(실제 어댑터, SegmentationPort는 아직 Stub만,
+                       # RecommendationPort는 HeuristicRecommendationProvider만 — Claude API v2는 미구현)
     /src/components   # DimensionForm/GridSizeForm/FloorplanUpload/CellPhotoGrid/
-                       # FurnitureExtractionPanel/BoundingBoxCorrectionPanel/FurnitureBoard/LayoutManager
+                       # FurnitureExtractionPanel/BoundingBoxCorrectionPanel/FurnitureBoard/
+                       # RecommendationPanel/LayoutManager
     /tests            # 위 구조를 그대로 미러링하는 단위/컴포넌트/통합 테스트
     .env.example      # NEXT_PUBLIC_SUPABASE_URL/ANON_KEY — 실제 값은 .env.local(미커밋)에
 ```

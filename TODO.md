@@ -48,10 +48,11 @@
 - [ ] 배경 제거 품질 개선 (투명 PNG 정제)
 
 ## Phase 4 — AI 추천 배치
-- [ ] 휴리스틱 추천 로직 v1 구현
-- [ ] Claude API 연동 추천 v2 (구조화 입출력)
-- [ ] 추천 사유 텍스트 노출
-- [ ] 추천 미리보기 → 적용/되돌리기 UX
+- [x] 휴리스틱 추천 로직 v1 구현 (`recommendPlacements`, `src/domain/recommendation.ts`)
+- [x] `RecommendationPort` + `HeuristicRecommendationProvider` (v1, `SegmentationPort`와 동일 패턴)
+- [ ] Claude API 연동 추천 v2 (구조화 입출력) — API 키 없이 보류
+- [x] 추천 사유 텍스트 노출 (`RecommendationPanel`)
+- [x] 추천 미리보기 → 적용/되돌리기 UX (`RecommendationPanel` + `app/page.tsx`)
 
 ## Phase 5 — 다듬기
 - [ ] 레이아웃 전/후 비교 뷰
