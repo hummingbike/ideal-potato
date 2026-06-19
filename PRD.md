@@ -50,7 +50,7 @@
 - [x] 추천안 미리보기 → 적용 / 되돌리기 (다른 추천안 중 선택하는 기능은 아직 없음 — 매번 새로 추천 받기만 가능)
 
 ### Phase 4 — 다듬기
-- [ ] 여러 레이아웃 비교 뷰 (전/후 스냅샷)
+- [x] 여러 레이아웃 비교 뷰 (전/후 스냅샷) — 저장된 배치 중 2개를 골라 나란히 비교 (3개 이상 동시 비교는 범위 밖)
 - [ ] 레이아웃 공유용 이미지 내보내기 (개인 보관/SNS 공유 목적)
 - [ ] PWA/모바일 대응 (촬영 → 즉시 칸 채우기 흐름 최적화)
 
@@ -94,6 +94,7 @@
 - **Phase 2 외부 연동 범위**: Supabase 프로젝트/세그멘테이션 모델 모두 아직 실제로 붙이지 않음. `ObjectStoragePort`/`SegmentationPort`/`LayoutRepositoryPort` 인터페이스 뒤에 인메모리 가짜 구현을 두고 MVP 전체 플로우(평면도 입력→그리드→셀 사진→가구 추출→보드 재배치→레이아웃 저장)를 먼저 완성. 실제 Supabase/세그멘테이션 어댑터 연동은 Phase 3로 이동 (자세한 내용은 [PLAN.md](PLAN.md) Phase 2/3 참고).
 - **Supabase 실제 연동**: `ideal-potato` 프로젝트(조직 `zero-bridge`, 리전 ap-northeast-2)를 생성해 `ObjectStoragePort`/`LayoutRepositoryPort`를 실제 Supabase Storage/Postgres 어댑터로 교체. 단일 사용자/무인증 전제(본 절 위쪽 항목)에 따라 RLS는 anon 키에 전체 접근을 허용 (자세한 내용은 [PLAN.md](PLAN.md) Phase 3 참고).
 - **AI 추천 배치 v1**: 가구 면적이 큰 순서로 정렬해 벽에 붙는 칸부터 채우고, 빈자리가 있으면 그리드 중앙 행(동선)을 비워두는 규칙 기반 휴리스틱으로 구현. `SegmentationPort`와 동일하게 `RecommendationPort` 인터페이스 뒤에 두어, v2(Claude API)는 어댑터만 교체하면 되도록 함 (자세한 내용은 [PLAN.md](PLAN.md) Phase 4 참고).
+- **레이아웃 비교 뷰**: 저장된 배치 중 정확히 2개를 선택해 읽기 전용(드래그 불가)으로 나란히 비교. 3개 이상 동시 비교, 비교 화면에서의 직접 편집은 범위 밖 (자세한 내용은 [PLAN.md](PLAN.md) Phase 5 참고).
 
 ## 13. 남은 미해결 질문 (Open Questions)
 - 자동 세그멘테이션 모델/서비스 선정 (자체 호스팅 vs 외부 API) — 실제 연동 시 결정 (Supabase 연동은 완료, 세그멘테이션만 남음).
