@@ -167,6 +167,7 @@ export default function HomePage() {
           </div>
           <LayoutManager
             floorplanId={FLOORPLAN_ID}
+            grid={grid}
             items={items}
             placements={placements}
             repository={repository}

@@ -104,9 +104,11 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
 > v1 완료. 가구 면적이 큰 순서로 정렬해 벽에 붙는 칸부터 배치하고, 빈자리가 있으면 그리드 중앙 행(동선)을 비워둔다. 겹침은 `@ideal-potato/grid-canvas`의 `findCollisions`로 차단하며, 벽/빈 공간 모두 없으면 통로를 일부 사용하거나 `unplaced` 목록으로 보고한다. `RecommendationPort`/`HeuristicRecommendationProvider`는 `SegmentationPort`와 동일한 패턴으로, v2(Claude API)는 어댑터만 교체하면 되도록 설계했다. 단위/컴포넌트/통합 테스트 14개 추가, `pnpm typecheck`/`test`/`build` 전체 워크스페이스 통과.
 
 ### Phase 5 — 다듬기
-- [ ] 레이아웃 비교(전/후) 뷰
+- [x] 레이아웃 비교(전/후) 뷰 — `LayoutSnapshot`/`LayoutComparisonView`, `LayoutManager`에서 저장된 배치 2개 선택 시 표시
 - [ ] 레이아웃 이미지 내보내기
 - [ ] 모바일 촬영 흐름 최적화 / PWA 적용 검토
+
+> 레이아웃 비교 뷰 완료. `LayoutManager`에 저장된 배치마다 "비교" 체크박스를 추가해 최대 2개까지 선택할 수 있고, 2개가 선택되면 `LayoutComparisonView`가 각 배치를 읽기 전용 `LayoutSnapshot`(드래그 불가, 정적 렌더링)으로 나란히 보여준다. 첫 번째로 선택한 배치가 "이전", 두 번째가 "이후"로 표시된다. 단위/컴포넌트 테스트 7개 추가 + 골든 패스 통합 테스트 확장, `pnpm typecheck`/`test`/`build` 전체 워크스페이스 통과.
 
 ## 4. 디렉터리 구조 (현재)
 ```
@@ -129,7 +131,7 @@ Phase 1에서 만든 캔버스 라이브러리를 사용해 실제 제품 기능
                        # RecommendationPort는 HeuristicRecommendationProvider만 — Claude API v2는 미구현)
     /src/components   # DimensionForm/GridSizeForm/FloorplanUpload/CellPhotoGrid/
                        # FurnitureExtractionPanel/BoundingBoxCorrectionPanel/FurnitureBoard/
-                       # RecommendationPanel/LayoutManager
+                       # RecommendationPanel/LayoutManager/LayoutSnapshot/LayoutComparisonView
     /tests            # 위 구조를 그대로 미러링하는 단위/컴포넌트/통합 테스트
     .env.example      # NEXT_PUBLIC_SUPABASE_URL/ANON_KEY — 실제 값은 .env.local(미커밋)에
 ```

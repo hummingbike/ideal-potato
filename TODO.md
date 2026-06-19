@@ -55,7 +55,7 @@
 - [x] 추천 미리보기 → 적용/되돌리기 UX (`RecommendationPanel` + `app/page.tsx`)
 
 ## Phase 5 — 다듬기
-- [ ] 레이아웃 전/후 비교 뷰
+- [x] 레이아웃 전/후 비교 뷰 (`LayoutSnapshot`/`LayoutComparisonView`, `LayoutManager`에 비교 선택 UI)
 - [ ] 레이아웃 이미지 내보내기
 - [ ] 모바일 촬영 흐름 최적화
 - [ ] PWA 적용 검토

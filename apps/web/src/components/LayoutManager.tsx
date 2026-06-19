@@ -2,21 +2,26 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { createLayout } from "../domain/layout";
-import type { FurnitureItem, Layout, LayoutPlacement } from "../domain/types";
+import type { FurnitureItem, Grid, Layout, LayoutPlacement } from "../domain/types";
 import type { LayoutRepositoryPort } from "../ports/layoutRepository";
+import { LayoutComparisonView } from "./LayoutComparisonView";
 
 export interface LayoutManagerProps {
   floorplanId: string;
+  grid: Grid;
   items: FurnitureItem[];
   placements: LayoutPlacement[];
   repository: LayoutRepositoryPort;
   onLoad: (layout: Layout) => void;
 }
 
-export function LayoutManager({ floorplanId, items, placements, repository, onLoad }: LayoutManagerProps) {
+const MAX_COMPARE_SELECTION = 2;
+
+export function LayoutManager({ floorplanId, grid, items, placements, repository, onLoad }: LayoutManagerProps) {
   const [name, setName] = useState("");
   const [savedLayouts, setSavedLayouts] = useState<Layout[]>([]);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [compareSelection, setCompareSelection] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +50,18 @@ export function LayoutManager({ floorplanId, items, placements, repository, onLo
     setSavedLayouts(await repository.listByFloorplan(floorplanId));
   }
 
+  function toggleCompare(layoutId: string) {
+    setCompareSelection((prev) => {
+      if (prev.includes(layoutId)) return prev.filter((id) => id !== layoutId);
+      if (prev.length >= MAX_COMPARE_SELECTION) return prev;
+      return [...prev, layoutId];
+    });
+  }
+
+  const [beforeId, afterId] = compareSelection;
+  const beforeLayout = savedLayouts.find((layout) => layout.id === beforeId);
+  const afterLayout = savedLayouts.find((layout) => layout.id === afterId);
+
   return (
     <div className="flex flex-col gap-3">
       <form onSubmit={handleSave} className="flex items-end gap-2">
@@ -62,9 +79,27 @@ export function LayoutManager({ floorplanId, items, placements, repository, onLo
             <button type="button" onClick={() => onLoad(layout)}>
               불러오기
             </button>
+            <label className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                aria-label={`${layout.name} 비교용 선택`}
+                checked={compareSelection.includes(layout.id)}
+                disabled={!compareSelection.includes(layout.id) && compareSelection.length >= MAX_COMPARE_SELECTION}
+                onChange={() => toggleCompare(layout.id)}
+              />
+              비교
+            </label>
           </li>
         ))}
       </ul>
+      {beforeLayout && afterLayout && (
+        <div className="flex flex-col gap-2">
+          <LayoutComparisonView grid={grid} items={items} before={beforeLayout} after={afterLayout} />
+          <button type="button" onClick={() => setCompareSelection([])}>
+            비교 닫기
+          </button>
+        </div>
+      )}
     </div>
   );
 }
