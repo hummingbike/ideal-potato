@@ -10,7 +10,7 @@ function pointerEvent(type: string, props: { clientX: number; clientY: number; p
 }
 
 describe("HomePage golden path", () => {
-  it("walks through outline -> grid -> cell photo -> extraction -> correction -> board -> recommendation -> save", async () => {
+  it("walks through outline -> grid -> cell photo -> extraction -> correction -> board -> recommendation -> save -> compare", async () => {
     const user = userEvent.setup();
     render(<HomePage />);
 
@@ -58,5 +58,24 @@ describe("HomePage golden path", () => {
     await user.type(screen.getByLabelText("배치 이름"), "테스트 배치");
     await user.click(screen.getByRole("button", { name: "배치 저장" }));
     expect(await screen.findByText('"테스트 배치" 저장됨')).toBeInTheDocument();
+
+    // 8. Move the item, then save a second layout to compare against the first
+    const item = board.querySelector<HTMLElement>('[data-item-id="furniture-0-0"]')!;
+    fireEvent(item, pointerEvent("pointerdown", { clientX: 10, clientY: 10 }));
+    fireEvent(item, pointerEvent("pointermove", { clientX: 110, clientY: 10 }));
+    fireEvent(item, pointerEvent("pointerup", { clientX: 110, clientY: 10 }));
+    await user.type(screen.getByLabelText("배치 이름"), "두 번째 배치");
+    await user.click(screen.getByRole("button", { name: "배치 저장" }));
+    expect(await screen.findByText('"두 번째 배치" 저장됨')).toBeInTheDocument();
+
+    // 9. Selecting both saved layouts shows a before/after comparison, closable
+    await user.click(screen.getByLabelText("테스트 배치 비교용 선택"));
+    await user.click(screen.getByLabelText("두 번째 배치 비교용 선택"));
+    expect(await screen.findByTestId("layout-comparison")).toBeInTheDocument();
+    expect(screen.getByText("이전: 테스트 배치")).toBeInTheDocument();
+    expect(screen.getByText("이후: 두 번째 배치")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "비교 닫기" }));
+    expect(screen.queryByTestId("layout-comparison")).not.toBeInTheDocument();
   });
 });
